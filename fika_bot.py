@@ -412,7 +412,7 @@ if bolt_app:
         slack_id = command["user_id"]
 
         _, message = add_person(name, email, slack_id)
-        respond_command(respond, f"<@{command["user_id"]}> " + message)
+        respond_command(respond, f"<@{command['user_id']}> " + message)
 
 
     @bolt_app.command("/swap")
@@ -425,7 +425,7 @@ if bolt_app:
             return
 
         _, message = swap_people(parts[0], parts[1])
-        respond_command(respond, f"<@{command["user_id"]}> " + message)
+        respond_command(respond, f"<@{command['user_id']}> " + message)
 
 
     @bolt_app.command("/get-list")
@@ -447,7 +447,7 @@ if bolt_app:
 
         lines = [f"{i + 1}. {p['name']}" for i, p in enumerate(upcoming)]
         note = f"\n_(only {len(upcoming)} people in the rotation)_" if len(upcoming) < n else ""
-        respond_command(respond, f"<@{command["user_id"]}> " + "*Upcoming fika order:*\n" + "\n".join(lines) + note)
+        respond_command(respond, f"<@{command['user_id']}> " + "*Upcoming fika order:*\n" + "\n".join(lines) + note)
 
 
     @bolt_app.command("/my-weeks")
@@ -468,7 +468,7 @@ if bolt_app:
             return
 
         lines = [f"- {_week_label(w)}" for w in weeks]
-        respond_command(respond, f"<@{command["user_id"]}>" + "*Your upcoming fika weeks:*\n" + "\n".join(lines))
+        respond_command(respond, f"<@{command['user_id']}>" + "*Your upcoming fika weeks:*\n" + "\n".join(lines))
 
 
     @bolt_app.command("/skip")
@@ -517,9 +517,9 @@ if bolt_app:
         parts = []
         if added:
             plural = "s" if len(added) != 1 else ""
-            parts.append(f"<@{command["user_id"]}> Skipping week{plural}: {fmt(added)}.")
+            parts.append(f"<@{command['user_id']}> Skipping week{plural}: {fmt(added)}.")
         if already:
-            parts.append(f"<@{command["user_id"]}> Already scheduled: {fmt(already)}.")
+            parts.append(f"<@{command['user_id']}> Already scheduled: {fmt(already)}.")
         respond_command(respond, " ".join(parts))
 
 
@@ -528,7 +528,7 @@ if bolt_app:
         ack()
 
         _, message = undo_last_rotation()
-        respond_command(respond, f"<@{command["user_id"]}>" + message)
+        respond_command(respond, f"<@{command['user_id']}>" + message)
 
 
 def start_command_listener():
