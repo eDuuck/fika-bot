@@ -191,7 +191,7 @@ def get_upcoming(n: int) -> list:
         return []
 
     count = min(n, len(people))
-    current_index = state.get("current_index", 0)
+    current_index = (state.get("current_index", 0) + len(people) - 1) % len(people)
     return [people[(current_index + i) % len(people)] for i in range(count)]
 
 
