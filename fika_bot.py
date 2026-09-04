@@ -45,6 +45,7 @@ def load_config():
         template = {
             "department": "Engineering",
             "public_responses": False,
+            "schedule": {"day_of_week": "mon", "hour": 8, "minute": 0},
             "people": [
                 {"name": "Alice", "email": "alice@example.com"},
                 {"name": "Bob", "email": "bob@example.com"},
@@ -543,28 +544,40 @@ def start_command_listener():
     SocketModeHandler(bolt_app, SLACK_APP_TOKEN).start()
 
 
+DAY_NAMES = {
+    "mon": "Monday", "tue": "Tuesday", "wed": "Wednesday", "thu": "Thursday",
+    "fri": "Friday", "sat": "Saturday", "sun": "Sunday",
+}
+
+
 def start_scheduler():
     """Start the background scheduler for weekly rotations."""
+    config = load_config()
+    schedule = config.get("schedule", {"day_of_week": "mon", "hour": 8, "minute": 0})
+    day_of_week = schedule.get("day_of_week", "mon")
+    hour = schedule.get("hour", 8)
+    minute = schedule.get("minute", 0)
+
     scheduler = BackgroundScheduler()
-    
-    # Run every Monday at 8:00 AM
-    # Change these values as needed:
-    # - day_of_week: 0=Monday, 1=Tuesday, etc.
+
+    # Configure the schedule via the "schedule" key in fika_config.json:
+    # - day_of_week: mon/tue/wed/thu/fri/sat/sun
     # - hour: 0-23
     # - minute: 0-59
     scheduler.add_job(
         run_fika_rotation,
         trigger="cron",
-        day_of_week="fri",
-        hour=15,
-        minute=0,
+        day_of_week=day_of_week,
+        hour=hour,
+        minute=minute,
         id="fika_rotation"
     )
-    
+
     scheduler.start()
     print("✅ Scheduler started!")
-    print("📅 Fika rotation scheduled for every Monday at 8:00 AM")
-    
+    day_label = DAY_NAMES.get(day_of_week, day_of_week)
+    print(f"📅 Fika rotation scheduled for every {day_label} at {hour:02d}:{minute:02d}")
+
     return scheduler
 
 
