@@ -44,6 +44,7 @@ def load_config():
         print("Creating template...")
         template = {
             "department": "Engineering",
+            "public_responses": False,
             "people": [
                 {"name": "Alice", "email": "alice@example.com"},
                 {"name": "Bob", "email": "bob@example.com"},
@@ -58,6 +59,21 @@ def load_config():
     
     with open(CONFIG_FILE, "r") as f:
         return json.load(f)
+
+
+def public_responses_enabled() -> bool:
+    """Whether slash command replies should be posted publicly to the channel
+    (response_type "in_channel") instead of only visible to the invoking user
+    (response_type "ephemeral", Slack's default)."""
+    return bool(load_config().get("public_responses", False))
+
+
+def respond_command(respond, message: str):
+    """Send a slash command response, honoring the `public_responses` config flag."""
+    if public_responses_enabled():
+        respond(message, response_type="in_channel")
+    else:
+        respond(message)
 
 
 def load_rotation_state():
@@ -387,7 +403,7 @@ if bolt_app:
         parts = text.split()
 
         if len(parts) < 2 or "@" not in parts[-1]:
-            respond("Usage: `/add-me Full Name email@example.com`")
+            respond_command("Usage: `/add-me Full Name email@example.com`")
             return
 
         email = parts[-1]
@@ -395,7 +411,7 @@ if bolt_app:
         slack_id = command["user_id"]
 
         _, message = add_person(name, email, slack_id)
-        respond(message)
+        respond_command(message)
 
 
     @bolt_app.command("/swap")
@@ -404,11 +420,11 @@ if bolt_app:
 
         parts = command.get("text", "").strip().split()
         if len(parts) != 2:
-            respond("Usage: `/swap @user1 @user2`")
+            respond_command("Usage: `/swap @user1 @user2`")
             return
 
         _, message = swap_people(parts[0], parts[1])
-        respond(message)
+        respond_command(message)
 
 
     @bolt_app.command("/get-list")
@@ -419,18 +435,18 @@ if bolt_app:
         n = 5
         if text:
             if not text.isdigit() or int(text) < 1:
-                respond("Usage: `/get-list [N]` (N must be a positive whole number, default 5)")
+                respond_command("Usage: `/get-list [N]` (N must be a positive whole number, default 5)")
                 return
             n = int(text)
 
         upcoming = get_upcoming(n)
         if not upcoming:
-            respond("The rotation is empty.")
+            respond_command("The rotation is empty.")
             return
 
         lines = [f"{i + 1}. {p['name']}" for i, p in enumerate(upcoming)]
         note = f"\n_(only {len(upcoming)} people in the rotation)_" if len(upcoming) < n else ""
-        respond("*Upcoming fika order:*\n" + "\n".join(lines) + note)
+        respond_command("*Upcoming fika order:*\n" + "\n".join(lines) + note)
 
 
     @bolt_app.command("/my-weeks")
@@ -441,17 +457,17 @@ if bolt_app:
         n = 5
         if text:
             if not text.isdigit() or int(text) < 1:
-                respond("Usage: `/my-weeks [N]` (N must be a positive whole number, default 5)")
+                respond_command("Usage: `/my-weeks [N]` (N must be a positive whole number, default 5)")
                 return
             n = int(text)
 
         weeks = get_my_weeks(command["user_id"], n)
         if not weeks:
-            respond("You're not currently in the fika rotation.")
+            respond_command("You're not currently in the fika rotation.")
             return
 
         lines = [f"- {_week_label(w)}" for w in weeks]
-        respond("*Your upcoming fika weeks:*\n" + "\n".join(lines))
+        respond_command("*Your upcoming fika weeks:*\n" + "\n".join(lines))
 
 
     @bolt_app.command("/skip")
@@ -471,11 +487,11 @@ if bolt_app:
             elif text.isdigit():
                 start_week = end_week = int(text)
             else:
-                respond(usage)
+                respond_command(usage)
                 return
 
             if not (1 <= start_week <= 53 and 1 <= end_week <= 53):
-                respond(usage)
+                respond_command(usage)
                 return
 
             targets = _resolve_skip_range(start_week, end_week)
@@ -503,7 +519,7 @@ if bolt_app:
             parts.append(f"Skipping week{plural}: {fmt(added)}.")
         if already:
             parts.append(f"Already scheduled: {fmt(already)}.")
-        respond(" ".join(parts))
+        respond_command(" ".join(parts))
 
 
     @bolt_app.command("/undo")
@@ -511,7 +527,7 @@ if bolt_app:
         ack()
 
         _, message = undo_last_rotation()
-        respond(message)
+        respond_command(message)
 
 
 def start_command_listener():

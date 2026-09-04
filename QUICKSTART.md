@@ -49,6 +49,7 @@ Edit `fika_config.json`. Each person needs a `slack_id` (their Slack member ID) 
 ```json
 {
   "department": "Engineering",
+  "public_responses": false,
   "people": [
     {"name": "Alice", "email": "alice@company.com", "slack_id": "U0123ABC456"},
     {"name": "Bob", "email": "bob@company.com", "slack_id": "U0234BCD567"}
@@ -56,6 +57,8 @@ Edit `fika_config.json`. Each person needs a `slack_id` (their Slack member ID) 
 }
 ```
 If `slack_id` is left blank, the bot just posts the person's plain name instead of pinging them.
+
+Set `"public_responses": true` if you want slash command replies (e.g. `/get-list`, `/swap`) posted publicly in the channel instead of just visible to whoever ran the command.
 
 ### 6️⃣ Run!
 ```bash

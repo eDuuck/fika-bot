@@ -14,6 +14,7 @@ Built this because I was tired of us forgetting whose turn it was and manually p
   - `/my-weeks [N]` - shows when you're next up
   - `/skip [N]` or `/skip A-B` - skips a reminder for a specific week (ISO week numbers)
   - `/undo` - undoes the last rotation step, in case someone accidentally triggers it
+- By default, slash command replies are only visible to the person who ran them (Slack's normal ephemeral behavior). Set `"public_responses": true` in `fika_config.json` to post them publicly in the channel instead, for transparency.
 
 ## Setup
 
