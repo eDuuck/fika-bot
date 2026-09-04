@@ -404,7 +404,7 @@ if bolt_app:
         parts = text.split()
 
         if len(parts) < 2 or "@" not in parts[-1]:
-            respond_command("Usage: `/add-me Full Name email@example.com`")
+            respond_command(respond, "Usage: `/add-me Full Name email@example.com`")
             return
 
         email = parts[-1]
@@ -412,7 +412,7 @@ if bolt_app:
         slack_id = command["user_id"]
 
         _, message = add_person(name, email, slack_id)
-        respond_command(message)
+        respond_command(respond, message)
 
 
     @bolt_app.command("/swap")
@@ -421,11 +421,11 @@ if bolt_app:
 
         parts = command.get("text", "").strip().split()
         if len(parts) != 2:
-            respond_command("Usage: `/swap @user1 @user2`")
+            respond_command(respond, "Usage: `/swap @user1 @user2`")
             return
 
         _, message = swap_people(parts[0], parts[1])
-        respond_command(message)
+        respond_command(respond, message)
 
 
     @bolt_app.command("/get-list")
@@ -436,18 +436,18 @@ if bolt_app:
         n = 5
         if text:
             if not text.isdigit() or int(text) < 1:
-                respond_command("Usage: `/get-list [N]` (N must be a positive whole number, default 5)")
+                respond_command(respond, "Usage: `/get-list [N]` (N must be a positive whole number, default 5)")
                 return
             n = int(text)
 
         upcoming = get_upcoming(n)
         if not upcoming:
-            respond_command("The rotation is empty.")
+            respond_command(respond, "The rotation is empty.")
             return
 
         lines = [f"{i + 1}. {p['name']}" for i, p in enumerate(upcoming)]
         note = f"\n_(only {len(upcoming)} people in the rotation)_" if len(upcoming) < n else ""
-        respond_command("*Upcoming fika order:*\n" + "\n".join(lines) + note)
+        respond_command(respond, "*Upcoming fika order:*\n" + "\n".join(lines) + note)
 
 
     @bolt_app.command("/my-weeks")
@@ -458,17 +458,17 @@ if bolt_app:
         n = 5
         if text:
             if not text.isdigit() or int(text) < 1:
-                respond_command("Usage: `/my-weeks [N]` (N must be a positive whole number, default 5)")
+                respond_command(respond, "Usage: `/my-weeks [N]` (N must be a positive whole number, default 5)")
                 return
             n = int(text)
 
         weeks = get_my_weeks(command["user_id"], n)
         if not weeks:
-            respond_command("You're not currently in the fika rotation.")
+            respond_command(respond, "You're not currently in the fika rotation.")
             return
 
         lines = [f"- {_week_label(w)}" for w in weeks]
-        respond_command("*Your upcoming fika weeks:*\n" + "\n".join(lines))
+        respond_command(respond, "*Your upcoming fika weeks:*\n" + "\n".join(lines))
 
 
     @bolt_app.command("/skip")
@@ -488,11 +488,11 @@ if bolt_app:
             elif text.isdigit():
                 start_week = end_week = int(text)
             else:
-                respond_command(usage)
+                respond_command(respond, usage)
                 return
 
             if not (1 <= start_week <= 53 and 1 <= end_week <= 53):
-                respond_command(usage)
+                respond_command(respond, usage)
                 return
 
             targets = _resolve_skip_range(start_week, end_week)
@@ -520,7 +520,7 @@ if bolt_app:
             parts.append(f"Skipping week{plural}: {fmt(added)}.")
         if already:
             parts.append(f"Already scheduled: {fmt(already)}.")
-        respond_command(" ".join(parts))
+        respond_command(respond, " ".join(parts))
 
 
     @bolt_app.command("/undo")
@@ -528,7 +528,7 @@ if bolt_app:
         ack()
 
         _, message = undo_last_rotation()
-        respond_command(message)
+        respond_command(respond, message)
 
 
 def start_command_listener():
